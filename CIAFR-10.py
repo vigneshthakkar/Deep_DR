@@ -1,47 +1,45 @@
 import tensorflow as tf
+import os
+from scipy import misc
+import csv
 
 initializer=tf.contrib.layers.xavier_initializer()
 saver=tf.train.Saver()
 
 weights={
-    'conv1': tf.get_variable('conv1w',[3,3,1,16],tf.float32,initializer),
+    'conv1': tf.get_variable('conv1w',[3,3,3,16],tf.float32,initializer),
 
     'conv21': tf.get_variable('conv21w',[3,3,16,160],tf.float32,initializer),
     'conv22': tf.get_variable('conv22w',[3,3,160,160],tf.float32,initializer),
     'conv23': tf.get_variable('conv23w',[3,3,160,160],tf.float32,initializer),
     'conv24': tf.get_variable('conv24w',[3,3,160,160],tf.float32,initializer),
+    'conv25': tf.get_variable('conv25w',[3,3,160,160],tf.float32,initializer),
+    'conv26': tf.get_variable('conv26w',[3,3,160,160],tf.float32,initializer),
+    'conv27': tf.get_variable('conv27w',[3,3,160,160],tf.float32,initializer),
+    'conv28': tf.get_variable('conv28w',[3,3,160,160],tf.float32,initializer),
+    'conv29': tf.get_variable('conv29w',[3,3,160,160],tf.float32,initializer),
 
     'conv31': tf.get_variable('conv31w',[3,3,160,320],tf.float32,initializer),
     'conv32': tf.get_variable('conv32w',[3,3,320,320],tf.float32,initializer),
     'conv33': tf.get_variable('conv33w',[3,3,320,320],tf.float32,initializer),
     'conv34': tf.get_variable('conv34w',[3,3,320,320],tf.float32,initializer),
+    'conv35': tf.get_variable('conv35w',[3,3,320,320],tf.float32,initializer),
+    'conv36': tf.get_variable('conv36w',[3,3,320,320],tf.float32,initializer),
+    'conv37': tf.get_variable('conv37w',[3,3,320,160],tf.float32,initializer),
+    'conv38': tf.get_variable('conv38w',[3,3,320,320],tf.float32,initializer),
+    'conv39': tf.get_variable('conv39w',[3,3,320,320],tf.float32,initializer),
 
     'conv41': tf.get_variable('conv41w',[3,3,320,640],tf.float32,initializer),
     'conv42': tf.get_variable('conv42w',[3,3,640,640],tf.float32,initializer),
     'conv43': tf.get_variable('conv43w',[3,3,640,640],tf.float32,initializer),
     'conv44': tf.get_variable('conv44w',[3,3,640,640],tf.float32,initializer),
-    '''
-    'conv51': tf.get_variable('conv51w',[3,3,320,400],tf.float32,initializer),
-    'conv52': tf.get_variable('conv52w',[3,3,400,400],tf.float32,initializer),
-    'conv53': tf.get_variable('conv53w',[3,3,400,400],tf.float32,initializer),
-    'conv54': tf.get_variable('conv54w',[3,3,400,400],tf.float32,initializer),
+    'conv45': tf.get_variable('conv45w',[3,3,640,640],tf.float32,initializer),
+    'conv46': tf.get_variable('conv46w',[3,3,640,640],tf.float32,initializer),
+    'conv47': tf.get_variable('conv47w',[3,3,640,640],tf.float32,initializer),
+    'conv48': tf.get_variable('conv48w',[3,3,640,640],tf.float32,initializer),
+    'conv49': tf.get_variable('conv49w',[3,3,640,640],tf.float32,initializer),
 
-    'conv61': tf.get_variable('conv61w',[3,3,400,480],tf.float32,initializer),
-    'conv62': tf.get_variable('conv62w',[3,3,480,480],tf.float32,initializer),
-    'conv63': tf.get_variable('conv63w',[3,3,480,480],tf.float32,initializer),
-    'conv64': tf.get_variable('conv64w',[3,3,480,480],tf.float32,initializer),
-
-    'conv71': tf.get_variable('conv71w',[3,3,480,560],tf.float32,initializer),
-    'conv72': tf.get_variable('conv72w',[3,3,560,560],tf.float32,initializer),
-    'conv73': tf.get_variable('conv73w',[3,3,560,560],tf.float32,initializer),
-    'conv74': tf.get_variable('conv74w',[3,3,560,560],tf.float32,initializer),
-
-    'conv81': tf.get_variable('conv81w',[3,3,560,640],tf.float32,initializer),
-    'conv82': tf.get_variable('conv82w',[3,3,640,640],tf.float32,initializer),
-    'conv83': tf.get_variable('conv83w',[3,3,640,640],tf.float32,initializer),
-    'conv84': tf.get_variable('conv84w',[3,3,640,640],tf.float32,initializer),
-    '''
-    'fc': tf.get_variable('fcw',[640,5],tf.float32,initializer)
+    'fc': tf.get_variable('fcw',[640,10],tf.float32,initializer)
 }
 
 biases={
@@ -51,48 +49,44 @@ biases={
     'conv22': tf.get_variable('conv22b',[160],tf.float32,initializer),
     'conv23': tf.get_variable('conv23b',[160],tf.float32,initializer),
     'conv24': tf.get_variable('conv24b',[160],tf.float32,initializer),
+    'conv25': tf.get_variable('conv25b',[160],tf.float32,initializer),
+    'conv26': tf.get_variable('conv26b',[160],tf.float32,initializer),
+    'conv27': tf.get_variable('conv27b',[160],tf.float32,initializer),
+    'conv28': tf.get_variable('conv28b',[160],tf.float32,initializer),
+    'conv29': tf.get_variable('conv29b',[160],tf.float32,initializer),
 
     'conv31': tf.get_variable('conv31b',[320],tf.float32,initializer),
     'conv32': tf.get_variable('conv32b',[320],tf.float32,initializer),
     'conv33': tf.get_variable('conv33b',[320],tf.float32,initializer),
     'conv34': tf.get_variable('conv34b',[320],tf.float32,initializer),
+    'conv35': tf.get_variable('conv35b',[320],tf.float32,initializer),
+    'conv36': tf.get_variable('conv36b',[320],tf.float32,initializer),
+    'conv37': tf.get_variable('conv37b',[320],tf.float32,initializer),
+    'conv38': tf.get_variable('conv38b',[320],tf.float32,initializer),
+    'conv39': tf.get_variable('conv39b',[320],tf.float32,initializer),
 
     'conv41': tf.get_variable('conv41b',[640],tf.float32,initializer),
     'conv42': tf.get_variable('conv42b',[640],tf.float32,initializer),
     'conv43': tf.get_variable('conv43b',[640],tf.float32,initializer),
     'conv44': tf.get_variable('conv44b',[640],tf.float32,initializer),
-    '''
-    'conv51': tf.get_variable('conv51b',[400],tf.float32,initializer),
-    'conv52': tf.get_variable('conv52b',[400],tf.float32,initializer),
-    'conv53': tf.get_variable('conv53b',[400],tf.float32,initializer),
-    'conv54': tf.get_variable('conv54b',[400],tf.float32,initializer),
+    'conv45': tf.get_variable('conv45b',[640],tf.float32,initializer),
+    'conv46': tf.get_variable('conv46b',[640],tf.float32,initializer),
+    'conv47': tf.get_variable('conv47b',[640],tf.float32,initializer),
+    'conv48': tf.get_variable('conv48b',[640],tf.float32,initializer),
+    'conv49': tf.get_variable('conv49b',[640],tf.float32,initializer),
 
-    'conv61': tf.get_variable('conv61b',[480],tf.float32,initializer),
-    'conv62': tf.get_variable('conv62b',[480],tf.float32,initializer),
-    'conv63': tf.get_variable('conv63b',[480],tf.float32,initializer),
-    'conv64': tf.get_variable('conv64b',[480],tf.float32,initializer),
-
-    'conv71': tf.get_variable('conv71b',[560],tf.float32,initializer),
-    'conv72': tf.get_variable('conv72b',[560],tf.float32,initializer),
-    'conv73': tf.get_variable('conv73b',[560],tf.float32,initializer),
-    'conv74': tf.get_variable('conv74b',[560],tf.float32,initializer),
-
-    'conv81': tf.get_variable('conv81b',[640],tf.float32,initializer),
-    'conv82': tf.get_variable('conv82b',[640],tf.float32,initializer),
-    'conv83': tf.get_variable('conv83b',[640],tf.float32,initializer),
-    'conv84': tf.get_variable('conv84b',[640],tf.float32,initializer),
-    '''
-    'fc': tf.get_variable('fcb',[5],tf.float32,initializer)
+    'fc': tf.get_variable('fcb',[10],tf.float32,initializer)
 }
 
 x=tf.placeholder(tf.float32)
 y=tf.placeholder(tf.float32)
+istraining=tf.placeholder(tf.bool)
 
-def conv(input,weight,bias,istraining,name):
+def conv(input,weight,bias,stride,istraining,name):
     with tf.name_scope(name):
         batchnorm=tf.contrib.layers.batch_norm(input,center=True,Scale=True,is_training=istraining)
         activate=tf.nn.relu(batchnorm)
-        convolution=tf.add(tf.nn.conv2d(activate,weight,strides=[1,1,1,1],padding='SAME'),bias)
+        convolution=tf.add(tf.nn.conv2d(activate,weight,strides=[1,stride,stride,1],padding='SAME'),bias)
         return convolution
 
 def network(x,istraining):
@@ -101,77 +95,96 @@ def network(x,istraining):
         conv1=tf.add(tf.nn.conv2d(x,weights['conv1'],strides=[1,1,1,1], padding='SAME')+biases['conv1'],name='conv1')
 
     with tf.name_scope('Block 2'):
-        conv21=conv(conv1,weights['conv21'],biases['conv21'],istraining,'conv21')
-        conv22=tf.add(conv(conv21,weights['conv22'],biases['conv22'],istraining,'conv22')+conv1)
-        conv23=conv(conv22,weights['conv23'],biases['conv23'],istraining,'conv23')
-        conv24=tf.add(conv(conv23,weights['conv24'],biases['conv24'],istraining,'conv24')+conv22)
-        avgpool2=tf.nn.avg_pool(conv24,ksize=[1,2,2,1],strides=[1,2,2,1],padding='SAME',name='avgpool2')
+        conv21=conv(conv1,weights['conv21'],biases['conv21'],1,istraining,'conv21')
+        conv22=conv(conv21,weights['conv22'],biases['conv22'],1,istraining,'conv22')
+        conv23=tf.add(conv(conv22,weights['conv23'],biases['conv23'],1,istraining,'conv23')+conv21)
+        conv24=conv(conv23,weights['conv24'],biases['conv24'],1,istraining,'conv24')
+        conv25=tf.add(conv(conv24,weights['conv25'],biases['conv25'],1,istraining,'conv25')+conv23)
+        conv26=conv(conv25,weights['conv26'],biases['conv26'],1,istraining,'conv26')
+        conv27=tf.add(conv(conv26,weights['conv27'],biases['conv27'],1,istraining,'conv27')+conv25)
+        conv28=conv(conv27,weights['conv28'],biases['conv28'],1,istraining,'conv28')
+        conv29=tf.add(conv(conv28,weights['conv29'],biases['conv29'],1,istraining,'conv29')+conv27)
 
     with tf.name_scope('Block 3'):
-        conv31=conv(avgpool2,weights['conv31'],biases['conv31'],istraining,'conv31')
-        conv32=tf.add(conv(conv31,weights['conv32'],biases['conv32'],istraining,'conv32')+avgpool2)
-        conv33=conv(conv32,weights['conv33'],biases['conv33'],istraining,'conv33')
-        conv34=tf.add(conv(conv33,weights['conv34'],biases['conv34'],istraining,'conv34')+conv32)
-        avgpool3=tf.nn.avg_pool(conv34,ksize=[1,2,2,1],strides=[1,2,2,1],padding='SAME',name='avgpool3')
-    '''
+        conv31=conv(conv29,weights['conv31'],biases['conv31'],2,istraining,'conv31')
+        conv32=conv(conv31,weights['conv32'],biases['conv32'],1,istraining,'conv32')
+        conv33=tf.add(conv(conv32,weights['conv33'],biases['conv33'],1,istraining,'conv33')+conv31)
+        conv34=conv(conv33,weights['conv34'],biases['conv34'],1,istraining,'conv34')
+        conv35=tf.add(conv(conv34,weights['conv35'],biases['conv35'],1,istraining,'conv35')+conv33)
+        conv36=conv(conv35,weights['conv36'],biases['conv36'],1,istraining,'conv36')
+        conv37=tf.add(conv(conv36,weights['conv37'],biases['conv37'],1,istraining,'conv37')+conv35)
+        conv38=conv(conv37,weights['conv38'],biases['conv38'],1,istraining,'conv38')
+        conv39=tf.add(conv(conv38,weights['conv39'],biases['conv39'],1,istraining,'conv39')+conv37)
+
     with tf.name_scope('Block 4'):
-        conv41=conv(avgpool3,weights['conv41'],biases['conv41'],istraining,'conv41')
-        conv42=tf.add(conv(conv41,weights['conv42'],biases['conv42'],istraining,'conv42')+avgpool3)
-        conv43=conv(conv42,weights['conv43'],biases['conv43'],istraining,'conv43')
-        conv44=tf.add(conv(conv43,weights['conv44'],biases['conv44'],istraining,'conv44')+conv42)
-        avgpool4=tf.nn.avg_pool(conv44,ksize=[1,2,2,1],strides=[1,2,2,1],padding='SAME',name='avgpool4')
+        conv41=conv(conv39,weights['conv41'],biases['conv41'],2,istraining,'conv41')
+        conv42=conv(conv41,weights['conv42'],biases['conv42'],1,istraining,'conv42')
+        conv43=tf.add(conv(conv42,weights['conv43'],biases['conv43'],1,istraining,'conv43')+conv31)
+        conv44=conv(conv43,weights['conv44'],biases['conv44'],1,istraining,'conv44')
+        conv45=tf.add(conv(conv44,weights['conv45'],biases['conv45'],1,istraining,'conv45')+conv43)
+        conv46=conv(conv45,weights['conv46'],biases['conv46'],1,istraining,'conv46')
+        conv47=tf.add(conv(conv46,weights['conv47'],biases['conv47'],1,istraining,'conv47')+conv45)
+        conv48=conv(conv47,weights['conv48'],biases['conv48'],1,istraining,'conv48')
+        conv49=tf.add(conv(conv48,weights['conv49'],biases['conv49'],1,istraining,'conv49')+conv47)
 
-    with tf.name_scope('Block 5'):
-        conv51=conv(avgpool4,weights['conv51'],biases['conv51'],istraining,'conv51')
-        conv52=tf.add(conv(conv51,weights['conv52'],biases['conv52'],istraining,'conv52')+avgpool4)
-        conv53=conv(conv52,weights['conv53'],biases['conv53'],istraining,'conv53')
-        conv54=tf.add(conv(conv53,weights['conv54'],biases['conv54'],istraining,'conv54')+conv52)
-        avgpool5=tf.nn.avg_pool(conv54,ksize=[1,2,2,1],strides=[1,2,2,1],padding='SAME',name='avgpool5')
+    with tf.name_scope('Avg Pool'):
+        avgpool=tf.nn.avg_pool(conv49,ksize=[1,8,8,1],strides=[1,1,1,1],padding='VALID')
 
-    with tf.name_scope('Block 6'):
-        conv61=conv(avgpool5,weights['conv61'],biases['conv61'],istraining,'conv61')
-        conv62=tf.add(conv(conv61,weights['conv62'],biases['conv62'],istraining,'conv62')+avgpool5)
-        conv63=conv(conv62,weights['conv63'],biases['conv63'],istraining,'conv63')
-        conv64=tf.add(conv(conv63,weights['conv64'],biases['conv64'],istraining,'conv64')+conv62)
-        avgpool6=tf.nn.avg_pool(conv64,ksize=[1,2,2,1],strides=[1,2,2,1],padding='SAME',name='avgpool6')
-
-    with tf.name_scope('Block 7'):
-        conv71=conv(avgpool6,weights['conv71'],biases['conv71'],istraining,'conv71')
-        conv72=tf.add(conv(conv71,weights['conv72'],biases['conv72'],istraining,'conv72')+avgpool6)
-        conv73=conv(conv72,weights['conv73'],biases['conv73'],istraining,'conv73')
-        conv74=tf.add(conv(conv73,weights['conv74'],biases['conv74'],istraining,'conv74')+conv72)
-        avgpool7=tf.nn.avg_pool(conv74,ksize=[1,2,2,1],strides=[1,2,2,1],padding='SAME',name='avgpool7')
-
-    with tf.name_scope('Block 8'):
-        conv81=conv(avgpool7,weights['conv81'],biases['conv81'],istraining,'conv81')
-        conv82=tf.add(conv(conv81,weights['conv82'],biases['conv82'],istraining,'conv82')+avgpool7)
-        conv83=conv(conv82,weights['conv83'],biases['conv83'],istraining,'conv83')
-        conv84=tf.add(conv(conv83,weights['conv84'],biases['conv84'],istraining,'conv84')+conv82)
-        avgpool8=tf.nn.avg_pool(conv84,ksize=[1,2,2,1],strides=[1,2,2,1],padding='SAME',name='avgpool8')
-    '''
     with tf.name_scope('fc'):
-        avgpool8=tf.reshape(avgpool8,[-1,1*1*640])
-        fc=tf.add(tf.matmul(avgpool8,weights['fc']),biases['fc'])
+        avgpool=tf.reshape(avgpool,[-1,1*1*640])
+        fc=tf.add(tf.matmul(avgpool,weights['fc']),biases['fc'])
 
     return fc
 
-def predict():
-    output=network(x,False)
-    predict_y=tf.nn.softmax(output)
-    return predict_y
-
-def train():
-    output=network(x,True)
-    with tf.name_scope('Loss'):
-        loss=tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y,logits=output))
-    with tf.name_scope('optimizer'):
-        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-        with tf.control_dependencies(update_ops):
-            optimizer=tf.train.AdamOptimizer().minimize(loss)
-    return loss,optimizer
+predict_y=network(x,istraining)
+loss=tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y,logits=predict_y))
+optimize=tf.train.AdamOptimizer().minimize(loss)
 
 def save(path,sess):
     saver.save(sess,path)
 
 def restore(path,sess):
     saver.restore(sess,path)
+
+
+def train():
+    path='/train/'
+    files=os.listdir(path)
+    images=[]
+    for file in files: images.append(misc.imread(path+file))
+    print('Images loaded')
+    labels=[]
+    with open('trainLabels.csv','rb') as csvfile:
+        labelcsv=csv.reader(csvfile,delimiter=' ',quotechar='|')
+        for row in labelcsv:
+            row=row.rstrip()
+            row=row.split(',')
+            row=row[-1]
+            if row=='airplane': labels.append([1,0,0,0,0,0,0,0,0,0])
+            if row=='automobile': labels.append([0,1,0,0,0,0,0,0,0,0])
+            if row=='bird': labels.append([0,0,1,0,0,0,0,0,0,0])
+            if row=='cat': labels.append([0,0,0,1,0,0,0,0,0,0])
+            if row=='deer': labels.append([0,0,0,0,1,0,0,0,0,0])
+            if row=='dog': labels.append([0,0,0,0,0,1,0,0,0,0])
+            if row=='frog': labels.append([0,0,0,0,0,0,1,0,0,0])
+            if row=='horse': labels.append([0,0,0,0,0,0,0,1,0,0])
+            if row=='ship': labels.append([0,0,0,0,0,0,0,0,1,0])
+            if row=='truck': labels.append([0,0,0,0,0,0,0,0,0,1])
+    print('Labels loaded')
+    print('Batch size : 100')
+    print('Variables saved after every 100 Epochs')
+    print('1000 Epochs')
+    with tf.Session() as sess:
+        for epoch in range(1,1001):
+            epochloss=0
+            for i in range(1,501):
+                batchimages,batchlabels=images[100*(i-1):100*(i)],labels[100*(i-1):100*i]
+                loss,optimize=sess.run([loss,optimize],feed_dict={x:batchimages, y:batchlabels, istraining:True})
+                epochloss+=loss
+            print('Epoch',epoch,'completed, loss :',epochloss)
+            if epoch%100==0:
+                save('/Variables/var'+str(epoch)+'.ckpt',sess)
+                print('Variables saved')
+        print('Network trained')
+
+train()
