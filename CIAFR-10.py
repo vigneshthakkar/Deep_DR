@@ -4,7 +4,6 @@ from scipy import misc
 import csv
 
 initializer=tf.contrib.layers.xavier_initializer()
-saver=tf.train.Saver()
 
 weights={
     'conv1': tf.get_variable('conv1w',[3,3,3,16],tf.float32,initializer),
@@ -25,7 +24,7 @@ weights={
     'conv34': tf.get_variable('conv34w',[3,3,320,320],tf.float32,initializer),
     'conv35': tf.get_variable('conv35w',[3,3,320,320],tf.float32,initializer),
     'conv36': tf.get_variable('conv36w',[3,3,320,320],tf.float32,initializer),
-    'conv37': tf.get_variable('conv37w',[3,3,320,160],tf.float32,initializer),
+    'conv37': tf.get_variable('conv37w',[3,3,320,320],tf.float32,initializer),
     'conv38': tf.get_variable('conv38w',[3,3,320,320],tf.float32,initializer),
     'conv39': tf.get_variable('conv39w',[3,3,320,320],tf.float32,initializer),
 
@@ -84,80 +83,92 @@ istraining=tf.placeholder(tf.bool)
 
 def conv(input,weight,bias,stride,istraining,name):
     with tf.name_scope(name):
-        batchnorm=tf.contrib.layers.batch_norm(input,center=True,Scale=True,is_training=istraining)
+        batchnorm=tf.layers.batch_normalization(input,training=istraining)
         activate=tf.nn.relu(batchnorm)
         convolution=tf.add(tf.nn.conv2d(activate,weight,strides=[1,stride,stride,1],padding='SAME'),bias)
         return convolution
 
 def network(x,istraining):
 
-    with tf.name_scope('Block 1'):
-        conv1=tf.add(tf.nn.conv2d(x,weights['conv1'],strides=[1,1,1,1], padding='SAME')+biases['conv1'],name='conv1')
+    with tf.name_scope('Block1'):
+        conv1=tf.add(tf.nn.conv2d(x,weights['conv1'],strides=[1,1,1,1], padding='SAME'),biases['conv1'],name='conv1')
 
-    with tf.name_scope('Block 2'):
+    with tf.name_scope('Block2'):
         conv21=conv(conv1,weights['conv21'],biases['conv21'],1,istraining,'conv21')
         conv22=conv(conv21,weights['conv22'],biases['conv22'],1,istraining,'conv22')
-        conv23=tf.add(conv(conv22,weights['conv23'],biases['conv23'],1,istraining,'conv23')+conv21)
+        conv23=tf.add(conv(conv22,weights['conv23'],biases['conv23'],1,istraining,'conv23'),conv21)
+        '''
         conv24=conv(conv23,weights['conv24'],biases['conv24'],1,istraining,'conv24')
-        conv25=tf.add(conv(conv24,weights['conv25'],biases['conv25'],1,istraining,'conv25')+conv23)
+        conv25=tf.add(conv(conv24,weights['conv25'],biases['conv25'],1,istraining,'conv25'),conv23)
         conv26=conv(conv25,weights['conv26'],biases['conv26'],1,istraining,'conv26')
-        conv27=tf.add(conv(conv26,weights['conv27'],biases['conv27'],1,istraining,'conv27')+conv25)
+        conv27=tf.add(conv(conv26,weights['conv27'],biases['conv27'],1,istraining,'conv27'),conv25)
         conv28=conv(conv27,weights['conv28'],biases['conv28'],1,istraining,'conv28')
-        conv29=tf.add(conv(conv28,weights['conv29'],biases['conv29'],1,istraining,'conv29')+conv27)
+        conv29=tf.add(conv(conv28,weights['conv29'],biases['conv29'],1,istraining,'conv29'),conv27)
+        '''
 
-    with tf.name_scope('Block 3'):
-        conv31=conv(conv29,weights['conv31'],biases['conv31'],2,istraining,'conv31')
+    with tf.name_scope('Block3'):
+        conv31=conv(conv23,weights['conv31'],biases['conv31'],2,istraining,'conv31')
         conv32=conv(conv31,weights['conv32'],biases['conv32'],1,istraining,'conv32')
-        conv33=tf.add(conv(conv32,weights['conv33'],biases['conv33'],1,istraining,'conv33')+conv31)
+        conv33=tf.add(conv(conv32,weights['conv33'],biases['conv33'],1,istraining,'conv33'),conv31)
+        '''
         conv34=conv(conv33,weights['conv34'],biases['conv34'],1,istraining,'conv34')
-        conv35=tf.add(conv(conv34,weights['conv35'],biases['conv35'],1,istraining,'conv35')+conv33)
+        conv35=tf.add(conv(conv34,weights['conv35'],biases['conv35'],1,istraining,'conv35'),conv33)
         conv36=conv(conv35,weights['conv36'],biases['conv36'],1,istraining,'conv36')
-        conv37=tf.add(conv(conv36,weights['conv37'],biases['conv37'],1,istraining,'conv37')+conv35)
+        conv37=tf.add(conv(conv36,weights['conv37'],biases['conv37'],1,istraining,'conv37'),conv35)
         conv38=conv(conv37,weights['conv38'],biases['conv38'],1,istraining,'conv38')
-        conv39=tf.add(conv(conv38,weights['conv39'],biases['conv39'],1,istraining,'conv39')+conv37)
+        conv39=tf.add(conv(conv38,weights['conv39'],biases['conv39'],1,istraining,'conv39'),conv37)
+        '''
 
-    with tf.name_scope('Block 4'):
-        conv41=conv(conv39,weights['conv41'],biases['conv41'],2,istraining,'conv41')
+    with tf.name_scope('Block4'):
+        conv41=conv(conv33,weights['conv41'],biases['conv41'],2,istraining,'conv41')
         conv42=conv(conv41,weights['conv42'],biases['conv42'],1,istraining,'conv42')
-        conv43=tf.add(conv(conv42,weights['conv43'],biases['conv43'],1,istraining,'conv43')+conv31)
+        conv43=tf.add(conv(conv42,weights['conv43'],biases['conv43'],1,istraining,'conv43'),conv41)
+        '''
         conv44=conv(conv43,weights['conv44'],biases['conv44'],1,istraining,'conv44')
-        conv45=tf.add(conv(conv44,weights['conv45'],biases['conv45'],1,istraining,'conv45')+conv43)
+        conv45=tf.add(conv(conv44,weights['conv45'],biases['conv45'],1,istraining,'conv45'),conv43)
         conv46=conv(conv45,weights['conv46'],biases['conv46'],1,istraining,'conv46')
-        conv47=tf.add(conv(conv46,weights['conv47'],biases['conv47'],1,istraining,'conv47')+conv45)
+        conv47=tf.add(conv(conv46,weights['conv47'],biases['conv47'],1,istraining,'conv47'),conv45)
         conv48=conv(conv47,weights['conv48'],biases['conv48'],1,istraining,'conv48')
-        conv49=tf.add(conv(conv48,weights['conv49'],biases['conv49'],1,istraining,'conv49')+conv47)
+        conv49=tf.add(conv(conv48,weights['conv49'],biases['conv49'],1,istraining,'conv49'),conv47)
+        '''
 
-    with tf.name_scope('Avg Pool'):
-        avgpool=tf.nn.avg_pool(conv49,ksize=[1,8,8,1],strides=[1,1,1,1],padding='VALID')
+    with tf.name_scope('AvgPool'):
+        avgpool=tf.nn.avg_pool(conv43,ksize=[1,8,8,1],strides=[1,1,1,1],padding='VALID')
 
     with tf.name_scope('fc'):
-        avgpool=tf.reshape(avgpool,[-1,1*1*640])
+        avgpool=tf.reshape(avgpool,[100,1*1*640])
         fc=tf.add(tf.matmul(avgpool,weights['fc']),biases['fc'])
 
     return fc
 
 predict_y=network(x,istraining)
 loss=tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y,logits=predict_y))
-optimize=tf.train.AdamOptimizer().minimize(loss)
+update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+with tf.control_dependencies(update_ops):
+    optimize=tf.train.AdamOptimizer().minimize(loss)
 
 def save(path,sess):
+    saver=tf.train.Saver()
     saver.save(sess,path)
 
 def restore(path,sess):
-    saver.restore(sess,path)
+    saver=tf.train.Saver()
+    saver.restore(sess,tf.train.latest_checkpoint('./'))
 
 
 def train():
-    path='/train/'
+    print('Loading train images')
+    path='train/'
+    count=0
     files=os.listdir(path)
     images=[]
-    for file in files: images.append(misc.imread(path+file))
+    for file in files: count+=1; print(count); images.append(misc.imread(path+file))
     print('Images loaded')
     labels=[]
-    with open('trainLabels.csv','rb') as csvfile:
+    with open('trainLabels.csv','rt') as csvfile:
         labelcsv=csv.reader(csvfile,delimiter=' ',quotechar='|')
         for row in labelcsv:
-            row=row.rstrip()
+            row=row[0].rstrip()
             row=row.split(',')
             row=row[-1]
             if row=='airplane': labels.append([1,0,0,0,0,0,0,0,0,0])
@@ -175,16 +186,20 @@ def train():
     print('Variables saved after every 100 Epochs')
     print('1000 Epochs')
     with tf.Session() as sess:
-        for epoch in range(1,1001):
+        #sess.run(tf.global_variables_initializer())
+        try:
+        	restore('var.ckpt.',sess)
+        except: print("Couldn't restore, Reinitializing"); sess.run(tf.global_variables_initializer())
+        for epoch in range(1,101):
             epochloss=0
             for i in range(1,501):
                 batchimages,batchlabels=images[100*(i-1):100*(i)],labels[100*(i-1):100*i]
-                loss,optimize=sess.run([loss,optimize],feed_dict={x:batchimages, y:batchlabels, istraining:True})
-                epochloss+=loss
+                batchloss,_=sess.run([loss,optimize],feed_dict={x:batchimages, y:batchlabels, istraining:True})
+                print('Batch',i,'out of 500 completed in epoch',epoch,'. Batch loss : ', batchloss)
+                epochloss+=batchloss
+                if i%2==0: save('var.ckpt',sess)
             print('Epoch',epoch,'completed, loss :',epochloss)
-            if epoch%100==0:
-                save('/Variables/var'+str(epoch)+'.ckpt',sess)
-                print('Variables saved')
+            if epoch%2==0: save('var.ckpt',sess)
         print('Network trained')
 
 train()
