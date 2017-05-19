@@ -57,7 +57,7 @@ biases={
     'fc3': tf.get_variable('fc3b',[10],tf.float32,initializer),
 }
 
-x=tf.placeholder(tf.float32)
+x=tf.placeholder(tf.float32,[100,32,32,3])
 y=tf.placeholder(tf.float32)
 
 def conv(input,weight,bias,stride,name):
@@ -90,7 +90,7 @@ def network(x):
         conv31=conv(maxpool2,weights['conv31'],biases['conv31'],1,'conv31')
         conv32=conv(conv31,weights['conv32'],biases['conv32'],1,'conv32')
         conv33=conv(conv32,weights['conv33'],biases['conv33'],1,'conv33')
-        conv34=conv(conv33,weights['conv34'],biases['convw4'],1,'conv34')
+        conv34=conv(conv33,weights['conv34'],biases['conv34'],1,'conv34')
         maxpool3=maxpool(conv34,2,2,'maxpool3')
 
     with tf.name_scope('Block4'):
@@ -98,7 +98,7 @@ def network(x):
         conv42=conv(conv41,weights['conv42'],biases['conv42'],1,'conv42')
         conv43=conv(conv42,weights['conv43'],biases['conv43'],1,'conv43')
         conv44=conv(conv43,weights['conv44'],biases['conv44'],1,'conv44')
-        maxpool4=tf.nn.max_pool(conv44,ksize=[1,2,2,1],strides=[1,1,1,1],padding='VALID')
+        maxpool4=tf.nn.max_pool(conv44,ksize=[1,4,4,1],strides=[1,1,1,1],padding='VALID')
 
     with tf.name_scope('fc'):
         maxpool4=tf.reshape(maxpool4,[-1,512])
@@ -127,7 +127,7 @@ def train():
     count=0
     files=os.listdir(path)
     images=[]
-    for file in files: count+=1; print(count); images.append(misc.imread(path+file))
+    for file in files: images.append(misc.imread(path+file))
     print('Images loaded')
     labels=[]
     with open('trainLabels.csv','rt') as csvfile:
@@ -148,8 +148,8 @@ def train():
             if row=='truck': labels.append([0,0,0,0,0,0,0,0,0,1])
     print('Labels loaded')
     print('Batch size : 100')
-    print('Variables saved after every 100 Epochs')
-    print('1000 Epochs')
+    print('Variables saved after every 2 Epochs')
+    print('100 Epochs')
     with tf.Session() as sess:
         try: restore(sess)
         except: print("Couldn't restore, Reinitializing"); sess.run(tf.global_variables_initializer())
@@ -160,7 +160,6 @@ def train():
                 batchloss,_=sess.run([loss,optimize],feed_dict={x:batchimages, y:batchlabels})
                 print('Batch',i,'out of 500 completed in epoch',epoch,'. Batch loss : ', batchloss)
                 epochloss+=batchloss
-                if i%2==0: save('var.ckpt',sess)
             print('Epoch',epoch,'completed, loss :',epochloss)
             if epoch%2==0: save('var.ckpt',sess)
         print('Network trained')
