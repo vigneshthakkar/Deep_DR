@@ -68,6 +68,7 @@ def conv(input,weight,bias,stride,name):
 
 def maxpool(x,kernel,stride,name):
     out=tf.nn.max_pool(x,ksize=[1,kernel,kernel,1],strides=[1,stride,stride,1],padding='SAME',name=name)
+    return out
 
 def network(x):
 
@@ -97,7 +98,7 @@ def network(x):
         conv42=conv(conv41,weights['conv42'],biases['conv42'],1,'conv42')
         conv43=conv(conv42,weights['conv43'],biases['conv43'],1,'conv43')
         conv44=conv(conv43,weights['conv44'],biases['conv44'],1,'conv44')
-        maxpool4=maxpool(conv44,2,2,'maxpool4')
+        maxpool4=tf.nn.max_pool(conv44,ksize=[1,2,2,1],strides=[1,1,1,1],padding='VALID')
 
     with tf.name_scope('fc'):
         maxpool4=tf.reshape(maxpool4,[-1,512])
